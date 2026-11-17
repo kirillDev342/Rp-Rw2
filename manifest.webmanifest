@@ -1,0 +1,16 @@
+{
+  "name": "Soul Knight: Neon Dungeon",
+  "short_name": "Neon Dungeon",
+  "description": "Пиксельный браузерный roguelite-шутер.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone", "minimal-ui"],
+  "orientation": "any",
+  "background_color": "#05070d",
+  "theme_color": "#090d18",
+  "icons": [
+    { "src": "assets/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "assets/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}

@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#090d18">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Soul Knight: Neon Dungeon — динамичный браузерный пиксельный roguelite-шутер.">
+  <title>Soul Knight: Neon Dungeon</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <canvas id="game" width="1280" height="720" aria-label="Игровое поле Soul Knight: Neon Dungeon"></canvas>
+
+    <aside id="mobileHud" class="mobile-hud" aria-label="Показатели героя">
+      <div class="mobile-hud__top">
+        <strong id="mobileWave">ВОЛНА 1 / 5</strong>
+        <span id="mobileTargets">ЦЕЛЕЙ: 0</span>
+        <b id="mobileCoins">● 0</b>
+      </div>
+      <div class="mobile-vitals">
+        <div class="mobile-vital mobile-vital--hp"><i id="mobileHpFill"></i><span id="mobileHpText">HP 100 / 100</span></div>
+        <div class="mobile-vital mobile-vital--armor"><i id="mobileArmorFill"></i><span id="mobileArmorText">ЩИТ 50 / 50</span></div>
+        <div class="mobile-vital mobile-vital--energy"><i id="mobileEnergyFill"></i><span id="mobileEnergyText">ЭНЕРГИЯ 100 / 100</span></div>
+      </div>
+    </aside>
+
+    <div id="touchControls" class="touch-controls" aria-label="Сенсорное управление">
+      <div id="moveStick" class="touch-stick touch-stick--move" role="application" aria-label="Стик движения">
+        <i class="touch-stick__knob"></i><small>ДВИЖЕНИЕ</small>
+      </div>
+      <div id="aimStick" class="touch-stick touch-stick--aim" role="application" aria-label="Стик прицеливания и огня">
+        <i class="touch-stick__knob"></i><small>ОГОНЬ</small>
+      </div>
+      <button id="touchDashBtn" class="touch-action touch-action--dash" aria-label="Рывок"><b>➜</b><small>РЫВОК</small></button>
+      <button id="touchPulseBtn" class="touch-action touch-action--pulse" aria-label="Энергоимпульс"><b>✦</b><small>ИМПУЛЬС</small></button>
+      <button id="touchPauseBtn" class="touch-pause" aria-label="Пауза">Ⅱ</button>
+      <div class="touch-weapons" aria-label="Выбор оружия">
+        <button data-touch-weapon="0" aria-label="Импульсный бластер">1</button>
+        <button data-touch-weapon="1" aria-label="Дробовик">2</button>
+        <button data-touch-weapon="2" aria-label="Криобластер">3</button>
+      </div>
+    </div>
+
+    <div id="vignette" aria-hidden="true"></div>
+    <div id="scanlines" aria-hidden="true"></div>
+
+    <section id="loading" class="screen screen--visible" aria-live="polite">
+      <div class="loading-card">
+        <div class="loader-icon">✦</div>
+        <div class="loading-title">ЗАГРУЖАЕМ ПОДЗЕМЕЛЬЕ</div>
+        <div class="loading-track"><i id="loadingBar"></i></div>
+        <small id="loadingText">Подготавливаем пиксели…</small>
+      </div>
+    </section>
+
+    <section id="menu" class="screen" aria-labelledby="menuTitle">
+      <div class="menu-stage">
+        <h1 id="menuTitle" class="sr-only">Soul Knight: Neon Dungeon</h1>
+        <p class="sr-only">Главное меню. Зачисти подземелье и одолей Стража Пустоты.</p>
+
+        <button id="startBtn" class="menu-hotspot menu-hotspot--start" aria-label="Начать одиночную игру">
+          <span class="sr-only">Начать игру</span>
+        </button>
+        <button id="multiplayerBtn" class="menu-multiplayer-btn" aria-label="Открыть сетевую игру">
+          <span>◆</span> СЕТЕВАЯ ИГРА <small>2–4 ИГРОКА</small>
+        </button>
+        <button id="howBtn" class="menu-hotspot menu-hotspot--how" aria-label="Как играть">
+          <span class="sr-only">Как играть</span>
+        </button>
+        <button id="settingsBtn" class="menu-hotspot menu-hotspot--settings" aria-label="Настройки звука">
+          <span class="sr-only">Настройки звука</span>
+        </button>
+        <button id="exitBtn" class="menu-hotspot menu-hotspot--exit" aria-label="Выйти из игры">
+          <span class="sr-only">Выйти из игры</span>
+        </button>
+
+        <p class="sr-only">Лучший результат: <strong id="bestScore">0</strong></p>
+      </div>
+    </section>
+
+    <section id="how" class="screen" aria-labelledby="howTitle">
+      <div class="modal-card how-card">
+        <button id="closeHowBtn" class="close-btn" aria-label="Закрыть">×</button>
+        <p class="eyebrow">ПОЛЕВОЙ СПРАВОЧНИК</p>
+        <h2 id="howTitle">КАК ВЫЖИТЬ</h2>
+        <div class="controls-grid">
+          <div class="control-row"><kbd>WASD</kbd><span><b>Движение</b><small>Стрелки тоже работают</small></span></div>
+          <div class="control-row"><kbd>ЛКМ</kbd><span><b>Стрельба</b><small>Наведи курсор на цель</small></span></div>
+          <div class="control-row"><kbd>SPACE</kbd><span><b>Рывок</b><small>Даёт краткую неуязвимость</small></span></div>
+          <div class="control-row"><kbd>Q</kbd><span><b>Энергоимпульс</b><small>Отталкивает врагов и пули</small></span></div>
+          <div class="control-row"><kbd>1–3</kbd><span><b>Смена оружия</b><small>Следи за запасом энергии</small></span></div>
+          <div class="control-row"><kbd>ESC</kbd><span><b>Пауза</b><small>Можно перевести дух</small></span></div>
+        </div>
+        <p class="tip"><b>Совет:</b> щит восстанавливается, если несколько секунд не получать урон.</p>
+        <button id="howStartBtn" class="pixel-btn pixel-btn--primary"><span class="btn-icon">▶</span><span>В БОЙ</span></button>
+      </div>
+    </section>
+
+    <section id="multiplayer" class="screen" aria-labelledby="multiplayerTitle">
+      <div class="modal-card multiplayer-card">
+        <button id="closeMultiplayerBtn" class="close-btn" aria-label="Закрыть">×</button>
+        <p class="eyebrow">СОВМЕСТНЫЙ ЗАБЕГ</p>
+        <h2 id="multiplayerTitle">СЕТЕВАЯ ИГРА</h2>
+
+        <div id="networkConnectPanel">
+          <label class="network-label" for="playerName">ИМЯ РЫЦАРЯ</label>
+          <input id="playerName" class="network-input" maxlength="16" autocomplete="nickname" placeholder="Рыцарь" value="Рыцарь">
+          <div class="network-actions">
+            <button id="createRoomBtn" class="pixel-btn pixel-btn--primary"><span class="btn-icon">＋</span>СОЗДАТЬ КОМНАТУ</button>
+            <div class="network-join">
+              <input id="roomCodeInput" class="network-input network-code-input" maxlength="6" autocomplete="off" spellcheck="false" placeholder="КОД">
+              <button id="joinRoomBtn" class="pixel-btn pixel-btn--ghost">ВОЙТИ</button>
+            </div>
+          </div>
+          <p class="network-help">Передай другу код комнаты. Для игры через интернет откройте один и тот же опубликованный адрес игры.</p>
+        </div>
+
+        <div id="networkRoomPanel" hidden>
+          <div class="room-heading">
+            <span>КОД КОМНАТЫ</span>
+            <button id="copyRoomCodeBtn" class="room-code" title="Скопировать код"><b id="roomCode">-----</b><small>КОПИРОВАТЬ</small></button>
+          </div>
+          <div id="networkPlayers" class="network-players" aria-live="polite"></div>
+          <p id="networkRoomStatus" class="network-status">Ждём игроков…</p>
+          <div class="network-room-actions">
+            <button id="startNetworkBtn" class="pixel-btn pixel-btn--primary" disabled><span class="btn-icon">▶</span>НАЧАТЬ ЗАБЕГ</button>
+            <button id="leaveRoomBtn" class="pixel-btn pixel-btn--ghost">ПОКИНУТЬ</button>
+          </div>
+        </div>
+
+        <p id="networkError" class="network-error" role="alert" aria-live="assertive"></p>
+      </div>
+    </section>
+
+    <section id="networkWait" class="screen network-wait" aria-live="polite">
+      <div class="network-wait-card">
+        <div class="loader-icon">◆</div>
+        <h2 id="networkWaitTitle">ВЕДУЩИЙ ВЫБИРАЕТ УСИЛЕНИЕ</h2>
+        <p id="networkWaitText">Приготовься к следующей волне</p>
+      </div>
+    </section>
+
+    <section id="upgrade" class="screen" aria-labelledby="upgradeTitle">
+      <div class="upgrade-wrap">
+        <p class="eyebrow">ВОЛНА ЗАЧИЩЕНА</p>
+        <h2 id="upgradeTitle">ВЫБЕРИ УСИЛЕНИЕ</h2>
+        <p class="upgrade-subtitle">Одно улучшение останется с тобой до конца забега</p>
+        <div id="upgradeChoices" class="upgrade-grid"></div>
+        <small class="upgrade-hint">Нажми на карту или клавиши 1–3</small>
+      </div>
+    </section>
+
+    <div id="toast" role="status" aria-live="polite"></div>
+    <button id="fullscreenBtn" class="fullscreen-btn" aria-label="Открыть на весь экран" title="Полный экран">⛶</button>
+    <button id="muteBtn" class="utility-btn" aria-label="Включить или выключить звук" title="Звук">♪</button>
+  </main>
+
+  <script src="game.js"></script>
+</body>
+</html>
